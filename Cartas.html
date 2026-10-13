@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+  <title>Mestre Da Arena | Cartas</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100&icon_names=favorite,home,search,settings" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <style>
+    @font-face {
+      font-family: 'Clash';
+      src: url(./Fonts/Clash_Regular.otf);
+    }
+
+    @font-face {
+      font-family: 'Clash-Bold';
+      src: url(./Fonts/Clash_Bold.otf);
+    }
+
+    #card-image {
+      width: 100%;
+      height: auto;
+    }
+
+    .carta {
+      margin-bottom: 20px;
+      font-family: 'Clash';
+      color: white;
+      text-shadow:
+        -2.5px -2.5px 0 black,
+        /* Sombra superior esquerda */
+        2.5px -2.5px 0 black,
+        /* Sombra superior direita */
+        -2.5px 2.5px 0 black,
+        /* Sombra inferior esquerda */
+        2.5px 2.5px 0 black;
+      /* Sombra inferior direita */
+      transition: transform 0.3s ease;
+    }
+
+.carta:hover {
+  transform: scale(1.08);
+  animation: balancar 0.5s ease;
+}
+
+@keyframes balancar {
+  25%  { transform: scale(1.08) rotate(-3deg); }
+  50%  { transform: scale(1.08) rotate(3deg); }
+  75%  { transform: scale(1.08) rotate(-2deg); }
+  100% { transform: scale(1.08) rotate(0deg); }
+}
+
+    body {
+      background-size: auto;
+    }
+
+    .pesquisa{
+      font-family: 'Clash';
+      font-size: 16px;
+      background: transparent;
+      outline: none;
+      border: none;
+      color: #333333;
+      
+    }
+
+    #titulo {
+      background-image: url(./Images/Titulo.png);
+      font-family: "Clash-Bold";
+      color: #59280a;
+      width: 954px;
+      max-width: 100%;
+      height: 154px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-inline: auto;
+
+    }
+  
+    /* ===== RESPONSIVO ===== */
+    @media (max-width: 1199px) {
+      #titulo {
+        height: auto;
+        aspect-ratio: 954 / 154;
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        font-size: clamp(1.1rem, 4.2vw, 2.5rem);
+        text-align: center;
+        padding: 0 12px;
+      }
+    }
+    @media (max-width: 575px) {
+      .carta .card-title { font-size: 1rem; }
+    }
+  </style>
+  <link rel="icon" href="./Images/icone.png">
+</head>
+
+<body background="./Images/FUNDO.jpg">
+  <nav class="w-full bg-[#0a2250] p-4 font-[clash] flex-row flex-wrap items-center gap-x-4 gap-y-2" style="display: flex;">
+    <img src="./Images/download.png" width="60" height="60" alt="">
+    <a class="text-white no-underline opacity-50 hover:opacity-100" href="./index.html">Início<span class="sr-only">(página atual)</span></a>
+    <a class="text-white no-underline hover:opacity-100" href="./Cartas.html">Cartas</a>
+    <a class="text-white no-underline opacity-50 hover:opacity-100" href="./MaisUsadas.html">Top Mais Usadas</a>
+      <a class="text-white no-underline opacity-50 hover:opacity-100" href="./clas.html">Eventos</a> 
+    <a class="text-white no-underline opacity-50 hover:opacity-100" href="./sobrenos.html">Sobre Nós</a>
+  </nav>
+  <div class="container mt-5">
+    <h1 id="titulo">Mestre Da Arena</h1>
+    <div class="row mb-4 justify-content-center">
+      <div class="col-12 col-md-6">
+        <div class="pesquisa">
+          <input type="text" class="form-control" placeholder="Buscar carta pelo nome..." id="input-pesquisa">
+        </div>
+      </div>
+    </div>
+    <div class="row" id="cartas-container"></div>
+  </div>
+  <audio autoplay loop>
+    <source src="./Musics/Clash Royale OST - Battle 1.mp3" type="audio/mpeg">
+  </audio>
+  <script>
+    // Variável para armazenar todas as cartas carregadas, para evitar múltiplas chamadas à API/JSON
+    let todasAsCartas = [];
+
+    async function buscarDadosCartas() {
+      // Esta função deve ser chamada apenas uma vez para buscar os dados brutos
+      try {
+        const resposta = await fetch('./cartas.json', {
+          method: 'GET',
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+        const dados = await resposta.json();
+        return dados.items || [];
+      } catch (erro) {
+        console.error("Erro ao buscar dados das cartas:", erro);
+        return null; // Retorna null em caso de erro
+      }
+    }
+
+    function exibirCartas(cartasParaExibir) {
+      const containerCartas = document.getElementById('cartas-container');
+      containerCartas.innerHTML = ''; // Limpa o container
+
+      if (!cartasParaExibir || cartasParaExibir.length === 0) {
+        containerCartas.innerHTML = "<p class='text-white text-center w-100'>Nenhuma carta encontrada.</p>";
+        return;
+      }
+
+      cartasParaExibir.forEach(carta => {
+        const colCarta = document.createElement('div');
+        colCarta.className = 'col-6 col-sm-4 col-md-3 col-lg-2 carta';
+        colCarta.innerHTML = `
+            <div id="card"class="">
+               <a href="./teste.html?id=${carta.name}">
+              <img src="${carta.iconUrls.medium}" id="card-image" class="card-img-top" alt="${carta.name}"></a>
+              <div class="card-body">
+                <h5 class="card-title text-center">${carta.name}</h5>
+              </div>
+            </div>
+          `;
+        containerCartas.appendChild(colCarta);
+      });
+    }
+
+    async function carregarCartas(termoPesquisa = '') {
+      const containerCartas = document.getElementById('cartas-container');
+
+      // 1. Carregar todas as cartas se ainda não tiverem sido carregadas
+      if (todasAsCartas.length === 0) {
+        containerCartas.innerHTML = "<p class='text-white text-center w-100'>Carregando cartas...</p>";
+        const dadosCartas = await buscarDadosCartas();
+
+        if (dadosCartas === null) {
+          containerCartas.innerHTML = "<p class='text-danger text-center w-100'>Erro ao carregar as cartas.</p>";
+          return;
+        }
+
+        todasAsCartas = dadosCartas;
+      }
+
+      // 2. Filtrar as cartas com base no termo de pesquisa
+      let cartasFiltradas = todasAsCartas;
+      if (termoPesquisa) {
+        // Converte o termo de pesquisa e os nomes das cartas para minúsculas para uma comparação case-insensitive
+        const termo = termoPesquisa.toLowerCase().trim();
+        cartasFiltradas = todasAsCartas.filter(carta =>
+          carta.name.toLowerCase().includes(termo)
+        );
+      }
+
+      // 3. Exibir o resultado
+      exibirCartas(cartasFiltradas);
+    }
+
+    // Opcional: Pesquisar ao pressionar 'Enter' no campo de texto
+    document.getElementById('input-pesquisa').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const termo = document.getElementById('input-pesquisa').value;
+        carregarCartas(termo);
+      }
+    });
+
+
+    // Inicia o carregamento das cartas
+    carregarCartas();
+  </script><br><br><br><br><br><br>
+
+  <footer class="bg-[#0a2250]">
+    <div class="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
+      <div class="md:flex md:justify-between">
+        <div class="mb-6 md:mb-0">
+          <a href="./Início.html" class="flex items-center">
+            <img src="./Images/download.png" class="h-8 me-3" alt="FlowBite Logo" />
+            <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Mestre Da Arena</span>
+          </a>
+        </div>
+      </div>
+      <hr class="my-6 border-white sm:mx-auto dark:border-white-200 lg:my-8" />
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2025 <a href="./index.html" class="hover:underline">Mestre Da Arena™</a>. Todos Direitos Reservados.
+        </span>
+        <div class="flex mt-4 sm:justify-center sm:mt-0">
+          <a href="#" class="text-gray-500 hover:text-gray-900 dark:hover:text-white">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 8 19">
+              <path fill-rule="evenodd" d="M6.135 3H8V0H6.135a4.147 4.147 0 0 0-4.142 4.142V6H0v3h2v9.938h3V9h2.021l.592-3H5V3.591A.6.6 0 0 1 5.592 3h.543Z" clip-rule="evenodd" />
+            </svg>
+            <span class="sr-only">Facebook page</span>
+          </a>
+          <a href="#" class="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 21 16">
+              <path d="M16.942 1.556a16.3 16.3 0 0 0-4.126-1.3 12.04 12.04 0 0 0-.529 1.1 15.175 15.175 0 0 0-4.573 0 11.585 11.585 0 0 0-.535-1.1 16.274 16.274 0 0 0-4.129 1.3A17.392 17.392 0 0 0 .182 13.218a15.785 15.785 0 0 0 4.963 2.521c.41-.564.773-1.16 1.084-1.785a10.63 10.63 0 0 1-1.706-.83c.143-.106.283-.217.418-.33a11.664 11.664 0 0 0 10.118 0c.137.113.277.224.418.33-.544.328-1.116.606-1.71.832a12.52 12.52 0 0 0 1.084 1.785 16.46 16.46 0 0 0 5.064-2.595 17.286 17.286 0 0 0-2.973-11.59ZM6.678 10.813a1.941 1.941 0 0 1-1.8-2.045 1.93 1.93 0 0 1 1.8-2.047 1.919 1.919 0 0 1 1.8 2.047 1.93 1.93 0 0 1-1.8 2.045Zm6.644 0a1.94 1.94 0 0 1-1.8-2.045 1.93 1.93 0 0 1 1.8-2.047 1.918 1.918 0 0 1 1.8 2.047 1.93 1.93 0 0 1-1.8 2.045Z" />
+            </svg>
+            <span class="sr-only">Discord community</span>
+          </a>
+          <a href="#" class="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 17">
+              <path fill-rule="evenodd" d="M20 1.892a8.178 8.178 0 0 1-2.355.635 4.074 4.074 0 0 0 1.8-2.235 8.344 8.344 0 0 1-2.605.98A4.13 4.13 0 0 0 13.85 0a4.068 4.068 0 0 0-4.1 4.038 4 4 0 0 0 .105.919A11.705 11.705 0 0 1 1.4.734a4.006 4.006 0 0 0 1.268 5.392 4.165 4.165 0 0 1-1.859-.5v.05A4.057 4.057 0 0 0 4.1 9.635a4.19 4.19 0 0 1-1.856.07 4.108 4.108 0 0 0 3.831 2.807A8.36 8.36 0 0 1 0 14.184 11.732 11.732 0 0 0 6.291 16 11.502 11.502 0 0 0 17.964 4.5c0-.177 0-.35-.012-.523A8.143 8.143 0 0 0 20 1.892Z" clip-rule="evenodd" />
+            </svg>
+            <span class="sr-only">Twitter page</span>
+          </a>
+          <a href="#" class="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 .333A9.911 9.911 0 0 0 6.866 19.65c.5.092.678-.215.678-.477 0-.237-.01-1.017-.014-1.845-2.757.6-3.338-1.169-3.338-1.169a2.627 2.627 0 0 0-1.1-1.451c-.9-.615.07-.6.07-.6a2.084 2.084 0 0 1 1.518 1.021 2.11 2.11 0 0 0 2.884.823c.044-.503.268-.973.63-1.325-2.2-.25-4.516-1.1-4.516-4.9A3.832 3.832 0 0 1 4.7 7.068a3.56 3.56 0 0 1 .095-2.623s.832-.266 2.726 1.016a9.409 9.409 0 0 1 4.962 0c1.89-1.282 2.717-1.016 2.717-1.016.366.83.402 1.768.1 2.623a3.827 3.827 0 0 1 1.02 2.659c0 3.807-2.319 4.644-4.525 4.889a2.366 2.366 0 0 1 .673 1.834c0 1.326-.012 2.394-.012 2.72 0 .263.18.572.681.475A9.911 9.911 0 0 0 10 .333Z" clip-rule="evenodd" />
+            </svg>
+            <span class="sr-only">GitHub account</span>
+          </a>
+          <a href="#" class="text-gray-500 hover:text-gray-900 dark:hover:text-white ms-5">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 0a10 10 0 1 0 10 10A10.009 10.009 0 0 0 10 0Zm6.613 4.614a8.523 8.523 0 0 1 1.93 5.32 20.094 20.094 0 0 0-5.949-.274c-.059-.149-.122-.292-.184-.441a23.879 23.879 0 0 0-.566-1.239 11.41 11.41 0 0 0 4.769-3.366ZM8 1.707a8.821 8.821 0 0 1 2-.238 8.5 8.5 0 0 1 5.664 2.152 9.608 9.608 0 0 1-4.476 3.087A45.758 45.758 0 0 0 8 1.707ZM1.642 8.262a8.57 8.57 0 0 1 4.73-5.981A53.998 53.998 0 0 1 9.54 7.222a32.078 32.078 0 0 1-7.9 1.04h.002Zm2.01 7.46a8.51 8.51 0 0 1-2.2-5.707v-.262a31.64 31.64 0 0 0 8.777-1.219c.243.477.477.964.692 1.449-.114.032-.227.067-.336.1a13.569 13.569 0 0 0-6.942 5.636l.009.003ZM10 18.556a8.508 8.508 0 0 1-5.243-1.8 11.717 11.717 0 0 1 6.7-5.332.509.509 0 0 1 .055-.02 35.65 35.65 0 0 1 1.819 6.476 8.476 8.476 0 0 1-3.331.676Zm4.772-1.462A37.232 37.232 0 0 0 13.113 11a12.513 12.513 0 0 1 5.321.364 8.56 8.56 0 0 1-3.66 5.73h-.002Z" clip-rule="evenodd" />
+            </svg>
+            <span class="sr-only">Dribbble account</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+
+
+</html>
+
